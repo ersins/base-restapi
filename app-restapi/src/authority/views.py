@@ -1,11 +1,12 @@
 import jwt
-from django.contrib.auth import authenticate
+from django.conf import settings
+from django.contrib.auth import authenticate, get_user_model
 from rest_framework import response, status, permissions
 from rest_framework.generics import GenericAPIView
-from rest_framework import permissions
 
 from authority.serializers import RegisterSerializer, LoginSerializer
 
+user_model = get_user_model()
 
 class AuthUserAPIView(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -27,6 +28,22 @@ class RegisterAPIView(GenericAPIView):
             serializer.save()
             return response.Response(serializer.data, status=status.HTTP_201_CREATED)
         return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class VerifyUserEmail(GenericAPIView):
+    def get(self, request):
+        token = request.GET.get('token')
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY)
+            user = user_model.objects.get(id=payload['user_id'])
+            if not user.is_verified:
+                user.is_verified = True
+                user.save()
+            return response.Response({'email': 'Successsfully activated'}, status=status.HTTP_200_OK)
+        except jwt.ExpiredSignatureError as identifier:
+            raise response.Response({'error': 'Activation Expired'}, status=status.HTTP_400_BAD_REQUEST)
+        except jwt.exceptions.DecodeError as identifier:
+            raise response.Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LoginAPIView(GenericAPIView):

@@ -9,4 +9,4 @@ redis
 djangorestframework
 Markdown
 django-filter
-pyjwt
+djangorestframework-simplejwt

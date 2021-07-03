@@ -43,10 +43,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'rest_framework_simplejwt',
     'rest_framework',
     'django_filters',
 
-    'authority.apps.AuthorityConfig',
+    'authority',
     'todos.apps.TodosConfig',
 ]
 
@@ -65,6 +66,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'core.middleware.RequestMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -121,7 +123,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'authority.jwt.JwtAuthentication',
+        # 'authority.jwt.JwtAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'NON_FIELD_ERRORS_KEY': 'error',
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
