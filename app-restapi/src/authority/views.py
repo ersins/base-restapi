@@ -31,10 +31,12 @@ class RegisterAPIView(GenericAPIView):
 
 
 class VerifyUserEmail(GenericAPIView):
+    authentication_classes = []
+
     def get(self, request):
         token = request.GET.get('token')
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY)
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms='HS256')
             user = user_model.objects.get(id=payload['user_id'])
             if not user.is_verified:
                 user.is_verified = True
