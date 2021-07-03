@@ -1,0 +1,12 @@
+asgiref
+Django
+gunicorn
+psycopg2-binary
+pytz
+sqlparse
+django-crispy-forms
+celery
+redis
+djangorestframework
+Markdown
+django-filter
