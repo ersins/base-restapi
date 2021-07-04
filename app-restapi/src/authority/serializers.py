@@ -37,12 +37,28 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class LoginSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=64, min_length=8, write_only=True)
+    tokens = serializers.SerializerMethodField()
+    extra_data = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ('email', 'username', 'password', 'tokens')
+        fields = ('email', 'username', 'password', 'tokens', 'extra_data')
 
-        read_only_fields = ['tokens', ]
+        read_only_fields = ['tokens', 'extra_data',]
+
+    def get_tokens(self, obj):
+        user = User.objects.get(email=obj.email)
+        return {
+            'accesse': user.tokens['access'],
+            'refreshd': user.tokens['refresh']
+        }
+
+    def get_extra_data(self, obj):
+        # TODO Mobil için gerekli parametreleri bu alanile gönderilecek
+        user = User.objects.get(email=obj.email)
+        return {
+            'about_me': user.about_me,
+        }
 
 
 class PasswordResetEmailSerializer(serializers.Serializer):
@@ -96,5 +112,3 @@ class SetNewPasswordSerializer(serializers.Serializer):
             return user
         except Exception as e:
             raise AuthenticationFailed('The reset link is invalid', 401)
-
-
