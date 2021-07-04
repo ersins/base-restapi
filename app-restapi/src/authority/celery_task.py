@@ -39,3 +39,64 @@ def send_activation_mail(data):
     except smtplib.SMTPAuthenticationError as ex:
         # TODO log edilecek
         print(ex)
+
+@shared_task
+def send_reset_password_mail(data):
+    """
+    Kullanıcı aktivasyonu için kullanılan celery task fonksiyonu post_save_user_create_reciever signals tarafından kullanılır
+    :param email_activation_id:
+    :return:
+    """
+
+    context = {
+        'path': data['url'],
+        'email': data['user'].email,
+        'user': data['user'].username,
+        'domain': 'www.site.com'
+    }
+    txt_ = get_template("password_reset/emails/password_reset_email.txt").render(context)
+    html_ = get_template("password_reset/emails/password_reset_email.html").render(context)
+    subject = data['subject']
+    from_email = settings.DEFAULT_FROM_EMAIL
+    recipient_list = [data['user'].email]
+    try:
+        sent_mail = send_mail(
+            subject,
+            txt_,
+            from_email,
+            recipient_list,
+            html_message=html_,
+            fail_silently=False,
+        )
+    except smtplib.SMTPAuthenticationError as ex:
+        # TODO log edilecek
+        print(ex)
+
+@shared_task
+def send_reset_password_complete_mail(data):
+    """
+    Kullanıcı aktivasyonu için kullanılan celery task fonksiyonu post_save_user_create_reciever signals tarafından kullanılır
+    :param email_activation_id:
+    :return:
+    """
+    context = {
+        'user': data['user'].username,
+        'domain': 'www.site.com'
+    }
+    txt_ = get_template("password_reset/emails/password_reset_complete_email.txt").render(context)
+    html_ = get_template("password_reset/emails/password_reset_complete_email.html").render(context)
+    subject = data['subject']
+    from_email = settings.DEFAULT_FROM_EMAIL
+    recipient_list = [data['user'].email]
+    try:
+        sent_mail = send_mail(
+            subject,
+            txt_,
+            from_email,
+            recipient_list,
+            html_message=html_,
+            fail_silently=False,
+        )
+    except smtplib.SMTPAuthenticationError as ex:
+        # TODO log edilecek
+        print(ex)
