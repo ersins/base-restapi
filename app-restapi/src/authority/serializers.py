@@ -90,8 +90,6 @@ class SetNewPasswordSerializer(serializers.Serializer):
                 raise AuthenticationFailed('The reset link is invalid', 401)
 
             user.set_password(password)
-            sonuc = user.save()
-            print(sonuc)
             data = {'user': user, 'subject': 'Şifrenizi başayıyla yenilediniz'}
             send_reset_password_complete_mail(data)
 

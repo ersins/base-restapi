@@ -47,9 +47,13 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework',
     'django_filters',
+    'corsheaders',
 
     'authority',
     'todos.apps.TodosConfig',
+    'expenses',
+    'income',
+
 ]
 
 AUTH_USER_MODEL = 'authority.User'  # changes the built-in user model to ours
@@ -62,6 +66,7 @@ CELERY_RESULT_BACKEND = CeleryEnv.CELERY_BACKEND
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -174,6 +179,8 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
