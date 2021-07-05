@@ -8,6 +8,8 @@ from rest_framework import serializers
 
 # from authority.models import User
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import RefreshToken
 from setuptools.unicode_utils import try_encode
 
 from authority.celery_task import send_reset_password_mail, send_reset_password_complete_mail
@@ -44,13 +46,13 @@ class LoginSerializer(serializers.ModelSerializer):
         model = User
         fields = ('email', 'username', 'password', 'tokens', 'extra_data')
 
-        read_only_fields = ['tokens', 'extra_data',]
+        read_only_fields = ['tokens', 'extra_data', ]
 
     def get_tokens(self, obj):
         user = User.objects.get(email=obj.email)
         return {
             'accesse': user.tokens['access'],
-            'refreshd': user.tokens['refresh']
+            'refresh': user.tokens['refresh']
         }
 
     def get_extra_data(self, obj):
@@ -63,12 +65,14 @@ class LoginSerializer(serializers.ModelSerializer):
 
 class PasswordResetEmailSerializer(serializers.Serializer):
     email = serializers.EmailField(min_length=6, max_length=100)
+    redirect_url = serializers.CharField(max_length=550, required=False)
 
     class Meta:
         fields = ['email', ]
 
     def validate(self, attrs):
         email = attrs.get('email', '')
+        redirect_url = attrs.get('redirect_url', '')
         qs = User.objects.filter(email=email)
         if qs.exists():
             user = qs.first()
@@ -76,10 +80,11 @@ class PasswordResetEmailSerializer(serializers.Serializer):
             token = PasswordResetTokenGenerator().make_token(user)
             req = RequestMiddleware(get_response=None)
             request = req.thread_local.current_request
+            # redirect_url=request.data.get('redirect_url')
             current_domain = get_current_site(request).domain
             relative_link = reverse('password-reset-check', kwargs={'uidb64': uidb64, 'token': token})
             # TODO link oluşturmak için bir yardımcı oluşturulabilir
-            absolute_url = f'http://{current_domain}{relative_link}'
+            absolute_url = f'http://{current_domain}{relative_link}?redirect_url={redirect_url}'
             data = {'url': absolute_url, 'user': user, 'subject': 'Reset your password'}
             send_reset_password_mail(data)
             return super().validate(attrs)
@@ -112,3 +117,21 @@ class SetNewPasswordSerializer(serializers.Serializer):
             return user
         except Exception as e:
             raise AuthenticationFailed('The reset link is invalid', 401)
+
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+
+    default_error_messages = {
+        'bad_token': ('Token is expired or invalid')
+    }
+
+    def validate(self, attrs):
+        self.token = attrs['refresh']
+        return attrs
+
+    def save(self, **kwargs):
+        try:
+            RefreshToken(self.token).blacklist()
+        except TokenError:
+            self.fail('bad_token')

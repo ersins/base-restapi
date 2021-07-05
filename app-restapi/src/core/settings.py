@@ -1,6 +1,6 @@
 from datetime import timedelta
 from pathlib import Path
-from .key_config import *
+from core.key_config import *
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = SecretsEnv.SECRET_KEY  # 'django-insecure-(z@8k^vrwd2&qk$j0*vbbjxkk)e8a=ne*q!qi&xhivj+%jw_$^'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = DebugEnv.DEDUG
+DEBUG = False # DebugEnv.DEDUG
 
 ALLOWED_HOSTS = AllowedHostEnv.ALLOWED_HOSTS
 
@@ -23,7 +23,7 @@ EMAIL_HOST_USER = EpostaEnv.EMAIL_HOST_USER
 EMAIL_HOST_PASSWORD = EpostaEnv.EMAIL_HOST_PASSWORD
 EMAIL_PORT = EpostaEnv.EMAIL_PORT
 EMAIL_USE_TLS = EpostaEnv.EMAIL_USE_TLS
-DEFAULT_FROM_EMAIL = 'Klikya eCommerce <esenzek@gmail.com>'
+DEFAULT_FROM_EMAIL = 'Klikya eCommerce <ersintest@gmail.com>'
 BASE_URL = '127.0.0.1:8000'
 MANAGERS = (
     ('Ersin Senzek', "ersinsenzek@gmail.com"),
@@ -44,15 +44,19 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'rest_framework_simplejwt',
+    # 'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'rest_framework',
     'django_filters',
     'corsheaders',
 
     'authority',
-    'todos.apps.TodosConfig',
+    # Geçici app
+    'todos',
     'expenses',
     'income',
+
+    'helpers'
 
 ]
 
@@ -129,13 +133,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'authority.jwt.JwtAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
+    'EXCEPTION_HANDLER': 'helpers.exception_handler.custom_exception_handler',
     'NON_FIELD_ERRORS_KEY': 'error',
-    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination', 'PAGE_SIZE': 10
-    # 'DEFAULT_PAGINATION_CLASS': 'todos.pagination.CustomPageNumberPagination', 'PAGE_SIZE': 10
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination', 'PAGE_SIZE': 10,
 }
 
 SIMPLE_JWT = {
@@ -203,3 +205,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = FolderRoots.get_media_root(BASE_DIR)
 
 PROTECTED_ROOT = FolderRoots.get_protected_root(BASE_DIR)
+
+# CustomRedirect
+APP_SCHEME = CustomRedirectEnv.APP_SCHEME
+FRONTEND_URL = CustomRedirectEnv.FRONTEND_URL

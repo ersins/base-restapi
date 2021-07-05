@@ -39,6 +39,10 @@ class CeleryEnv:
 class AllowedHostEnv:
     ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(' ')
 
+class CustomRedirectEnv:
+    APP_SCHEME = os.getenv('APP_SCHEME', '')
+    FRONTEND_URL = os.getenv('FRONTEND_URL', '')
+
 
 class Internationalization:
     LANGUAGE_CODE = os.getenv('LANGUAGE_CODE', 'tr')
